@@ -2,6 +2,7 @@ import numpy as np
 import os
 from skimage.io import imread
 import pandas as pd
+from typing import List
 
 
 class TileSetReader:
@@ -10,11 +11,11 @@ class TileSetReader:
     Secondary sets may have extra tiles, but none missing from the first.
     Can handle different extensions between sets, assuming they are common image types.
     """
-    def __init__(self, folders: list[str], extensions: list[str]):
+    def __init__(self, folders: List[str], extensions: List[str]):
         self.tile_sets = self.read_tile_sets(folders, extensions)
 
     @staticmethod
-    def read_tile_sets(folders, extensions) -> (list[str], list[list[np.ndarray]]):
+    def read_tile_sets(folders, extensions) -> (List[str], List[List[np.ndarray]]):
         base_names, tile_sets = [], [[] for _ in range(len(folders))]
         first_folder = folders[0]
         for full_name in os.listdir(first_folder):
@@ -35,8 +36,8 @@ class TileSetScorer:
     """
     Assumes the vast majority of objects to have internal centroids (i.e. convex)
     """
-    def __init__(self, base_names: list[str], gt_set: list[np.ndarray],
-                 pred_set: list[np.ndarray], taus: list[float]):
+    def __init__(self, base_names: List[str], gt_set: List[np.ndarray],
+                 pred_set: List[np.ndarray], taus: List[float]):
         self.base_names = base_names
         self.gt_set = gt_set
         self.pred_set = pred_set
@@ -80,7 +81,7 @@ class ScoringSubroutine:
         self.scores = self.calculate_scores(gt, pred, tau, gt_centroids, pred_centroids)
 
     @staticmethod
-    def find_centroids(mask: np.ndarray) -> list[list[int, int]]:
+    def find_centroids(mask: np.ndarray) -> List[List[int, int]]:
         # Finds centroid coordinates as weighted averages of binary pixel values
         centroids = []
         for object_id in np.unique(mask)[1:]:
@@ -91,7 +92,7 @@ class ScoringSubroutine:
         return centroids
 
     def calculate_scores(self, gt: np.ndarray, pred: np.ndarray, tau: float,
-                         gt_centroids: list[list[int, int]], pred_centroids: list[list[int, int]]) \
+                         gt_centroids: List[List[int, int]], pred_centroids: List[List[int, int]]) \
             -> (float, int, int, int, float, float, float, float, float, float):
         iou = self.calc_iou(gt, pred)
         tp, fp, seg_qual = self.calc_tp_fp_sg(gt, pred, tau, pred_centroids)
@@ -115,7 +116,7 @@ class ScoringSubroutine:
         union_area = np.sum(union)
         return intersection_area / union_area
 
-    def calc_tp_fp_sg(self, gt: np.ndarray, pred: np.ndarray, tau: float, pred_centroids: list[list[int, int]]) \
+    def calc_tp_fp_sg(self, gt: np.ndarray, pred: np.ndarray, tau: float, pred_centroids: List[List[int, int]]) \
             -> (int, int, float):
         # Assumes the vast majority of object centroids are internal (i.e. convex objects)
         tp, fp, sum_tp_iou = 0, 0, 0.0
@@ -137,7 +138,7 @@ class ScoringSubroutine:
         sg = sum_tp_iou / tp if tp > 0 else 0
         return tp, fp, sg
 
-    def calc_fn(self, gt: np.ndarray, pred: np.ndarray, tau: float, gt_centroids: list[list[int, int]]) -> int:
+    def calc_fn(self, gt: np.ndarray, pred: np.ndarray, tau: float, gt_centroids: List[list[int, int]]) -> int:
         fn = 0
         for centroid in gt_centroids:
             x, y = centroid[0], centroid[1]
