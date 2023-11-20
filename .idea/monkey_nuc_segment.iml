@@ -5,4 +5,7 @@
     <orderEntry type="jdk" jdkName="C:\Users\Donald\anaconda3\envs\monkey_nuc_segment_v6" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
 </module>
