@@ -1,0 +1,10 @@
+#pip install -r requirements.txt
+pip
+tensorflow-gpu
+stardist
+imagecodecs
+gputil
+pandas
+opencv-python
+chardet
+jupyter
