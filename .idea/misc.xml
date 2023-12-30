@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="stardist_gpu" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="C:\Users\Donald\anaconda3\envs\monkey_nuc_segment_v6" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="monkey_nuc_segment" project-jdk-type="Python SDK" />
 </project>
