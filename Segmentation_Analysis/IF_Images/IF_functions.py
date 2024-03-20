@@ -52,6 +52,7 @@ def is_point_encompassed(xy_point, set_of_points):
 
 def get_indices_shapes(polys, xy_coords):
     poly_inds = []
+    xys = [] # return centroids list
 
     in_tile = []
     for num, i in enumerate(polys['coord']):
@@ -82,18 +83,21 @@ def get_indices_shapes(polys, xy_coords):
             if is_point_encompassed(xy_cy5, xy):
 
                 poly_inds.append(num)
+                xys.append(xy_cy5)
                 # print(num, x_cent, y_cent)
                 break  # don't include double counts
 
-    return poly_inds
+    return poly_inds, xys
 
 
 def get_valid_shapes_for_crop(shapes, crop_x, crop_y, tile_size):
     new_shapes = []
     new_shapes_areas = []
     for i in range(len(shapes)):
-        adj_x = [x - crop_x for x in shapes[i][0, :]]
-        adj_y = [y - crop_y for y in shapes[i][1, :]]
+        #adj_x = [x - crop_x for x in shapes[i][0, :]]
+        #adj_y = [y - crop_y for y in shapes[i][1, :]]
+        adj_x = [x - crop_y for x in shapes[i][0, :]]
+        adj_y = [y - crop_x for y in shapes[i][1, :]]
         new_shape = np.transpose(np.array([adj_x, adj_y]))
         if all(tile_size > value > 0 for value in adj_x) and all(tile_size > value > 0 for value in adj_y):
             new_shapes.append(new_shape)

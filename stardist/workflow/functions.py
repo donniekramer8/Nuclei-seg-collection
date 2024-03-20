@@ -449,7 +449,7 @@ def save_json_from_WSI_pred(result, out_pth, name):
     for i in range(len(points)):
         point = points[i]
         contour = coords[i]
-        centroid = [int(point[0]), int(point[1])]
+        centroid = [int(point[0]), int(point[1])]  # TODO: FIX
         contour = [[float(coord) for coord in xy[::-1]] for xy in contour]
 
         # Create a new dictionary for each contour
