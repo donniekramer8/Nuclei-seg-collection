@@ -467,7 +467,19 @@ def save_json_from_WSI_pred(result, out_pth, name):
     print('Finished',new_fn)
 
 
+def format_seg_data(segmentation_data, ds):
+    data_list = []
+    for data in segmentation_data:
+        centroid = data['centroid'][0]
+        contour = data['contour'][0]
 
+        ds_centroid = [int(c / ds) for c in centroid]
+        ds_contour = [[value / ds for value in sublist] for sublist in contour]
+        ds_contour = [[round(x, 2), round(y, 2)] for x, y in zip(ds_contour[0], ds_contour[1])]
+
+        dat = [ds_centroid, ds_contour]
+        data_list.append(dat)
+    return data_list
 
 
 
