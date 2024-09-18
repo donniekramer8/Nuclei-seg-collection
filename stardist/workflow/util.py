@@ -176,7 +176,7 @@ def save_json_data_from_selected(coords, points, out_pth, name):
             contour = coords[i]
             #print(contour)
             centroid = [int(point[0]), int(point[1])]  # TODO: FIX
-            contour = [[coord for coord in xy[::-1]] for xy in contour][0]
+            contour = [[coord for coord in xy] for xy in contour][0]
 
             # Create a new dictionary for each contour
             dict_data = {

@@ -75,8 +75,8 @@ def get_rgb_avg(centroid, contour_raw, offset, HE_20x_WSI):
     
     #plt.imshow(im_crop)
     
-    crop_x = centroid[1]-offset-1
-    crop_y = centroid[0]-offset-1
+    crop_x = centroid[0]-offset-1
+    crop_y = centroid[1]-offset-1
     
     contour_adj = adjust_contours(contour_raw, crop_x, crop_y)
     contour_new = contour_adj# .reshape((-1,1,2)).astype(np.uint16)
