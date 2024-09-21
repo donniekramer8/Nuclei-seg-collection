@@ -1,0 +1,31 @@
+pth = '\\10.162.80.16\Andre_expansion\data\Skin Lymphedema\L0001_diseased_150\StarDist_9_17_2024_pdac\stardist_feature_df_pickles\xy_inds\registered\mat_with_reg_coords/';
+matlist = dir([pth,'*.mat']);
+
+reg_im_pth = '\\10.162.80.16\Andre_expansion\data\Skin Lymphedema\L0001_diseased_150\1x_python\registered\elastic registration\';
+im0 = imread([reg_im_pth,'L001_diseased_0001.jpg']);
+
+scale = 2; % 1.25x -> 2.5x
+
+x = size(im0,1)*scale;
+y = size(im0,2)*scale;
+z = length(matlist);
+
+volcell = zeros(x,y,z,'uint64');
+
+%%
+load([pth,matlist(1).name], "colnames")
+
+for i=1:length(matlist)
+    disp(i)
+    matnm = [pth,matlist(i).name];
+    load(matnm, 'df')
+    xy = df(:,1:2);
+
+    im = zeros(x,y);
+    subscripts = uint64(sub2ind([x,y], uint64(xy(:,2)), uint64(xy(:,1))));
+
+    im(subscripts) = row_num_inds;  % label each cell as row num in features table
+   
+
+
+end
