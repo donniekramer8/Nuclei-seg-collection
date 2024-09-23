@@ -127,7 +127,7 @@ def get_rgb_avg(centroid, contour_raw, offset, HE_20x_WSI):
     return r_avg, g_avg, b_avg, r_std, g_std, b_std
 
 def get_json_file_list(WSI_path: str, json_folder_name: str) -> list:
-    out_pth_json = os.path.join(WSI_path, json_folder_name)
+    out_pth_json = os.path.join(WSI_path, json_folder_name, 'json')
     json_pth_list = sorted([os.path.join(out_pth_json,file) for file in os.listdir(out_pth_json) if file.endswith(".json")])
     return json_pth_list
 
@@ -140,20 +140,19 @@ def write_df_features_pkl(WSI_path, out_name, WSI_file_type) -> None:
     WSI_full_pth_list = sorted([os.path.join(WSI_path,file) for file in os.listdir(WSI_path) if file.endswith(WSI_file_type)])
 
     outpth = os.path.join(os.path.dirname(json_full_pth_list[0]),'nuclear_morph_features_pkl')
+    if not os.path.exists(outpth):
+        os.mkdir(outpth)
 
     for i, json_f_name in enumerate(json_full_pth_list):
     
         nm = json_f_name.split('\\')[-1].split('.')[0]
         
         outnm = os.path.join(outpth, f'{nm}.pkl')
-        print(outnm)
+        print(nm)
         
         if not os.path.exists(outnm):
             
             HE_20x_WSI = imread(WSI_full_pth_list[i])
-            
-            print(WSI_full_pth_list[i])
-            print(json_f_name)
             
             try:
                 segmentation_data = json.load(open(json_f_name))
@@ -412,14 +411,18 @@ def write_mat_features_from_pkl(WSI_path, out_name) -> None:
     Run after write_df_features_pkl. This function assumes that your pkl path is
     named nuclei_features_mats. If you changed it, then this will error out"""
 
-    pkl_pth = os.path.join(WSI_path,out_name,'nuclear_morph_features_pkl')
+    pkl_pth = os.path.join(WSI_path,out_name,'json','nuclear_morph_features_pkl')
     mat_pth = os.path.join(pkl_pth, 'nuclear_morph_features_mat')
 
-    dfs = [os.path.join(pkl_pth,f) for f in os.listdir(pkl_pth)]
+    if not os.path.exists(mat_pth):
+        os.mkdir(mat_pth)
+
+    dfs = [os.path.join(pkl_pth,f) for f in os.listdir(pkl_pth) if f.endswith('.pkl')]
 
     for dfnm in dfs:
         
-        outnm = os.path.join(mat_pth,os.path.basename(dfnm))
+        outnm = os.path.join(mat_pth,os.path.basename(dfnm))[:-4] # remove ".pkl" from nm
+        outnm = "".join([outnm,'.mat'])
         
         print("Saving: {}".format(dfnm))
             

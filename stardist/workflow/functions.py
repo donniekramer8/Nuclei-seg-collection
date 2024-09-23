@@ -168,6 +168,8 @@ def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: Sta
 
     # make outdirs
     out_pth = os.path.join(WSI_path, out_nm)
+    if not os.path.exists(out_pth):
+        os.mkdir(out_pth)
 
     out_pth_json = os.path.join(out_pth, 'json')
     out_pth_tif = os.path.join(out_pth, 'tif')
@@ -190,7 +192,7 @@ def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: Sta
                 img = imread(img_pth)
                 img = img/255  # normalization used to train model
                 
-                if save_tif:
+                if not save_tif:
                     _, polys = model.predict_instances_big(img, axes='YXC', block_size=4096, min_overlap=128, context=128, n_tiles=(4,4,1))
                     # labels, polys = model.predict_instances_big(img, axes='YXC', block_size=4096, min_overlap=128, context=128, n_tiles=(4,4,1))
         
