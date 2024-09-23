@@ -158,6 +158,59 @@ def save_geojson_from_segmentation(tiles_pth: str, model: StarDist2D, outpth: st
         print('Finished', new_fn)
 
 
+def json_to_geojson_whole_folder(json_pth) -> None:
+    """Save a geojson file from stardist json output. Useful for visualization in QuPath"""
+
+    json_pth_list = sorted([os.path.join(json_pth,file) for file in os.listdir(json_pth) if file.endswith(".json")])
+
+    outpth = os.path.join(json_pth, 'geojson')
+    if not os.path.exists(outpth):
+        os.mkdir(outpth)
+
+    for pth in json_pth_list:
+        name = os.path.basename(pth)
+        new_fn = name[:-4] + 'geojson' # nm.json -> nm.geojson
+        out_full = os.path.join(outpth,new_fn)
+
+        if not os.path.exists(out_full):
+    
+            with open(pth, 'r') as f:
+                json_data = json.load(f)
+
+            GEOdata = []
+
+            for nuc in json_data:
+                centroid = nuc['centroid'][0]
+                contour = nuc['contour'][0][::-1]
+                centroid = [centroid[0] + 0, centroid[1] + 0]
+                # note: add 1 to coords to fix 0 indexing vs 1 index offset
+                contour = [[coord for coord in xy] for xy in contour] # I forgot why I did this
+                contour = [[row[i] for row in contour] for i in range(len(contour[0]))] # transpose and also flip xy -> yx
+                contour.append(contour[0])  # stardist doesn't close the circle, needed for qupath
+                
+                # Create a new dictionary for each contour
+                dict_data = {
+                    "type": "Feature",
+                    "id": "PathCellObject",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [contour]
+                    },
+                    "properties": {
+                        'objectType': 'annotation',
+                        'classification': {'name': 'Nuclei', 'color': [97, 214, 59]}
+                    }
+                }
+
+                GEOdata.append(dict_data)
+
+            with open(out_full, 'w') as outfile:
+                geojson.dump(GEOdata, outfile)
+            print('Finished', new_fn)
+        else:
+            print(f'Skipping {name}... (Already exists)')
+
+
 def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: StarDist2D, save_tif: bool):
     """Segments a directory of WSIs
     WSI_path: path to H&E images that will get their nuclei segmented
