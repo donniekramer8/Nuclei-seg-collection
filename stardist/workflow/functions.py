@@ -6,7 +6,7 @@ import geojson
 from typing import List, Tuple
 from pathlib import Path
 import os
-from tifffile import imread
+from tifffile import imread, imwrite
 from tqdm import tqdm
 import random
 from PIL import Image
@@ -156,6 +156,60 @@ def save_geojson_from_segmentation(tiles_pth: str, model: StarDist2D, outpth: st
         with open(outpth.joinpath(new_fn), 'w') as outfile:
             geojson.dump(GEOdata, outfile)
         print('Finished', new_fn)
+
+
+def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: StarDist2D, save_tif: bool):
+    """Segments a directory of WSIs
+    WSI_path: path to H&E images that will get their nuclei segmented
+    save_tif: option to save tif image of segmentation"""
+
+    # make list of full paths to images
+    WSIs = [os.path.join(WSI_path, f) for f in os.listdir(WSI_path) if f.endswith(file_type)]
+
+    # make outdirs
+    out_pth = os.path.join(WSI_path, out_nm)
+
+    out_pth_json = os.path.join(out_pth, 'json')
+    out_pth_tif = os.path.join(out_pth, 'tif')
+
+    if not os.path.exists(out_pth_json):
+        os.mkdir(out_pth_json)
+    if not os.path.exists(out_pth_json):
+        os.mkdir(out_pth_json)
+    if not os.path.exists(out_pth_tif) and save_tif:
+        os.mkdir(out_pth_tif)
+
+    # main loop
+    for img_pth in WSIs:
+        try:
+            name = os.path.basename(img_pth)
+
+            if not os.path.exists(os.path.join(out_pth_json, (name[:-5] + '.json'))):
+                print(f'Starting {name}')
+                
+                img = imread(img_pth)
+                img = img/255  # normalization used to train model
+                
+                if save_tif:
+                    _, polys = model.predict_instances_big(img, axes='YXC', block_size=4096, min_overlap=128, context=128, n_tiles=(4,4,1))
+                    # labels, polys = model.predict_instances_big(img, axes='YXC', block_size=4096, min_overlap=128, context=128, n_tiles=(4,4,1))
+        
+                    print('Saving json...')
+                    save_json_from_WSI_pred(polys, out_pth_json, name)
+
+                else:
+                    # tif file is like 3 GB usually, so only uncomment next part if you are ok with that
+                    labels, polys = model.predict_instances_big(img, axes='YXC', block_size=4096, min_overlap=128, context=128, n_tiles=(4,4,1))
+                    print('Saving json...')
+                    save_json_from_WSI_pred(polys, out_pth_json, name)
+                    
+                    print('Saving tif...')
+                    imwrite(os.path.join(out_pth_tif, name[:-5] + '.tif'), labels)
+                    
+            else:
+                print(f'Skipping {name}')
+        except:
+            print(f'skipping {img_pth}, probably bc its too big...')
 
 
 def augment_tiles(tiles: List[np.ndarray], masks: List[np.ndarray]) -> Tuple[List[np.ndarray], List[np.ndarray]]:
