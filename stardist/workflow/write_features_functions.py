@@ -2,12 +2,13 @@ import os
 import numpy as np
 import cv2
 import json
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 import h5py
 import pandas as pd
 from tifffile import imread
 import matplotlib.pyplot as plt
 import copy
+import pickle
 
 
 # basic morphology features
@@ -125,9 +126,20 @@ def get_rgb_avg(centroid, contour_raw, offset, HE_20x_WSI):
     
     return r_avg, g_avg, b_avg, r_std, g_std, b_std
 
-def write_df_features_pkl(json_full_pth_list, WSI_full_pth_list, outpth):
-    # json_full_pth_list: a list of the full paths to each json file that was outputted from custom stardist output in this module
-    # outpth: path to save the resulting .pkl dataframes of features
+def get_json_file_list(WSI_path: str, json_folder_name: str) -> list:
+    out_pth_json = os.path.join(WSI_path, json_folder_name)
+    json_pth_list = sorted([os.path.join(out_pth_json,file) for file in os.listdir(out_pth_json) if file.endswith(".json")])
+    return json_pth_list
+
+def write_df_features_pkl(WSI_path, out_name, WSI_file_type) -> None:
+    """Writes a pickle file of a pandas df with nuclear segmentation features for each nuclei in a WSI"""
+    WSI_full_pth_list = sorted([os.path.join(WSI_path,file) for file in os.listdir(WSI_path) if file.endswith(WSI_file_type)])
+    # WSI_pth/json_pth/nuclear_morph_features_pkl
+    json_full_pth_list = get_json_file_list(WSI_path, out_name)
+
+    WSI_full_pth_list = sorted([os.path.join(WSI_path,file) for file in os.listdir(WSI_path) if file.endswith(WSI_file_type)])
+
+    outpth = os.path.join(os.path.dirname(json_full_pth_list[0]),'nuclear_morph_features_pkl')
 
     for i, json_f_name in enumerate(json_full_pth_list):
     
@@ -137,11 +149,6 @@ def write_df_features_pkl(json_full_pth_list, WSI_full_pth_list, outpth):
         print(outnm)
         
         if not os.path.exists(outnm):
-            
-            # delete, just for testing
-            #i = 400
-            #print(i)
-            #json_f_name = jsons[400]
             
             HE_20x_WSI = imread(WSI_full_pth_list[i])
             
@@ -169,9 +176,7 @@ def write_df_features_pkl(json_full_pth_list, WSI_full_pth_list, outpth):
             perimeters = []
             circularities = []
             aspect_ratios = []
-            image_ids = []
-            classes = []
-            
+
             compactness_a, eccentricity_a, euler_number_a, extent_a, form_factor_a, maximum_radius_a, mean_radius_a, median_radius_a, minor_axis_length_a, major_axis_length_a, orientation_degrees_a = [], [], [], [], [], [], [], [], [], [], []
             
             np_centroids = np.array(centroids)
@@ -201,14 +206,7 @@ def write_df_features_pkl(json_full_pth_list, WSI_full_pth_list, outpth):
                 MA = cntMA(contour)
                 [MA, ma, orientation] = MA
                 aspect_ratio = MA / ma
-                #center_x = centroid[0]
-                #center_y = centroid[1]
-                
-                cent_x = np_centroids[j,0]
-                cent_y = np_centroids[j,1]
-                
-                #compactness and form_factor are stupid because they are basically same as circularity, maybe extent too
-                
+
                 compactness = perimeter ** 2 / area
                 eccentricity = np.sqrt(1 - (ma / MA) ** 2)
                 extent = area / (MA * ma)
@@ -408,3 +406,28 @@ def write_df_features_pkl_single(json_file_pth, WSI_file_pth, outpth):
         
         df.to_pickle(outnm)
 
+
+def write_mat_features_from_pkl(WSI_path, out_name) -> None:
+    """Makes a dir of .mat files from .pkl files
+    Run after write_df_features_pkl. This function assumes that your pkl path is
+    named nuclei_features_mats. If you changed it, then this will error out"""
+
+    pkl_pth = os.path.join(WSI_path,out_name,'nuclear_morph_features_pkl')
+    mat_pth = os.path.join(pkl_pth, 'nuclear_morph_features_mat')
+
+    dfs = [os.path.join(pkl_pth,f) for f in os.listdir(pkl_pth)]
+
+    for dfnm in dfs:
+        
+        outnm = os.path.join(mat_pth,os.path.basename(dfnm))
+        
+        print("Saving: {}".format(dfnm))
+            
+        with open(os.path.join(dfnm), 'rb') as f:
+            df = pickle.load(f)
+
+        col_names = df.columns.tolist()
+        df = [_ for _ in df.to_numpy()]
+        df = np.array(df)
+        
+        savemat(outnm, {'features':df, 'feature_names':col_names})
