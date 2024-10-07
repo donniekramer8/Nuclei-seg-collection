@@ -1,0 +1,8 @@
+# this is not a real requirements.txt file yet, just a list of stuff
+# python 3.9
+pip install tensorflow
+pip install stardist
+pip install geojson
+pip install pandas
+pip install opencv-python
+pip install imagecodecs
