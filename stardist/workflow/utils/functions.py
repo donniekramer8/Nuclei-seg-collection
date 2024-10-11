@@ -12,6 +12,7 @@ import random
 from PIL import Image
 from stardist import fill_label_holes
 import copy
+import tensorflow as tf
 from tensorflow.python.summary.summary_iterator import summary_iterator
 import struct
 from matplotlib.colors import ListedColormap
@@ -21,14 +22,14 @@ import pandas as pd
 def load_model(model_path: str) -> StarDist2D:
     """Justin made: Load StarDist model weights, configurations, and thresholds"""
     # TODO: remove offshoot thing
-    with open(model_path + '\\config.json', 'r') as f:
+    with open(os.path.join(model_path, 'config.json'), 'r') as f:
         config = json.load(f)
-    with open(model_path + '\\thresholds.json', 'r') as f:
+    with open(os.path.join(model_path, 'thresholds.json'), 'r') as f:
         thresh = json.load(f)
     model = StarDist2D(config=Config2D(**config), basedir=model_path, name='offshoot_model')
     model.thresholds = thresh
     print('Overriding defaults:', model.thresholds, '\n')
-    model.load_weights(model_path + '\\weights_best.h5')
+    model.load_weights(os.path.join(model_path, 'weights_best.h5'))
     return model
 
 
@@ -234,15 +235,22 @@ def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: Sta
     if not os.path.exists(out_pth_tif) and save_tif:
         os.mkdir(out_pth_tif)
 
+    physical_devices = tf.config.list_physical_devices('GPU')
+    print("Num GPUs Available: ", len(physical_devices))
+
     # main loop
     for img_pth in WSIs:
         try:
             name = os.path.basename(img_pth)
 
-            if not os.path.exists(os.path.join(out_pth_json, (name[:-5] + '.json'))):
+            if not os.path.exists(os.path.join(out_pth_json, (name[:-len(file_type)] + '.json'))):
                 print(f'Starting {name}')
                 
-                img = imread(img_pth)
+                if 'tif' in file_type:
+                    img = imread(img_pth)
+                else:
+                    Image.MAX_IMAGE_PIXELS = None
+                    img = np.array(Image.open(img_pth))
                 img = img/255  # normalization used to train model
                 
                 if not save_tif:
@@ -260,7 +268,7 @@ def segment_dir_of_images(WSI_path: str, file_type: str, out_nm: str, model: Sta
                     
                     print('Saving tif...')
                     imwrite(os.path.join(out_pth_tif, name[:-5] + '.tif'), labels)
-                    
+                        
             else:
                 print(f'Skipping {name}')
         except:
