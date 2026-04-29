@@ -32,15 +32,7 @@ Nuclei-seg-collection/
 │   ├── 3_select_nuclei/         # Select nucleus subsets via QuPath annotations
 │   ├── 4_cell_seg_from_nuclei/  # Estimate cell boundaries from nucleus positions
 │   └── 5_export_geojson/        # Export segmentation results to QuPath GeoJSON
-│
-├── analysis/                    # Project-specific analysis notebooks and scripts
-│   ├── pancreas/                # Pancreatic tissue model training and analysis
-│   ├── monkey/                  # Monkey fetus multi-tissue analysis
-│   ├── skin/                    # Skin tissue registration and analysis (Python + MATLAB)
-│   ├── plots/                   # Hyperparameter search, F1 plots, density analysis
-│   ├── write_features/          # Feature extraction notebooks and pkl→mat conversion
-│   └── other/                   # Miscellaneous utilities (HoVerNet, NDPI, etc.)
-│
+|
 ├── requirements.txt
 └── .gitignore
 ```
@@ -230,18 +222,6 @@ row_match, col_match = colocalize_points(centroids_a, centroids_b, r=20)
 - **Input images:** `.tif` or `.png` RGB H&E images. Large WSIs are processed in 4096×4096 blocks with 128 px overlap via `predict_instances_big`.
 - **Normalization:** Images are divided by 255 before inference. Models were trained on data normalized this way.
 - **Coordinate convention:** StarDist returns coordinates as `(row, col)` i.e. `(y, x)`. The JSON output stores centroids as `[row, col]` and contours as `[[x, y], ...]` after flipping. Keep this in mind when integrating with other tools.
-
----
-
-## Project-Specific Analysis
-
-The `analysis/` folder contains notebooks tied to specific research projects and is kept separate from the general pipeline:
-
-- **`analysis/pancreas/`** — Custom model training and feature analysis for pancreatic H&E slides
-- **`analysis/monkey/`** — Multi-tissue nuclear density and morphology analysis for monkey fetus sections; includes UMAP, PCA, and violin plot notebooks
-- **`analysis/skin/`** — Skin tissue registration pipeline (Python + MATLAB); aligns multi-section stacks and registers nucleus coordinates across sections
-- **`analysis/plots/`** — Hyperparameter sweep visualizations, F1 bar plots, and density trend analysis
-- **`analysis/write_features/`** — Standalone feature extraction notebooks and `.pkl` → `.mat` conversion
 
 ---
 

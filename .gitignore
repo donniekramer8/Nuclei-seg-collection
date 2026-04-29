@@ -40,6 +40,9 @@ env/
 # Legacy workflow directory (superseded by notebooks/ and nuclei_seg/)
 stardist/
 
+# Project-specific analysis (not part of the general pipeline)
+analysis/
+
 # OS
 .DS_Store
 Thumbs.db
