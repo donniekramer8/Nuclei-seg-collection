@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data and model artifacts (large binary files)
+*.h5
+*.hdf5
+*.mat
+*.pkl
+*.tif
+*.tiff
+*.png
+*.ndpi
+*.svs
+*.json
+
+# Keep example/reference JSON files if needed — remove the above json rule or
+# use "!some_specific_file.json" to whitelist individual files.
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Legacy workflow directory (superseded by notebooks/ and nuclei_seg/)
+stardist/
+
+# OS
+.DS_Store
+Thumbs.db

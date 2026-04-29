@@ -1,8 +1,17 @@
-# this is not a real requirements.txt file yet, just a list of stuff
-# python 3.9
-pip install tensorflow
-pip install stardist
-pip install geojson
-pip install pandas
-pip install opencv-python
-pip install imagecodecs
+# Python 3.9 recommended
+# Install with: pip install -r requirements.txt
+
+tensorflow>=2.10,<2.14
+stardist>=0.8.3
+opencv-python>=4.7
+scikit-learn>=1.2
+scipy>=1.10
+pandas>=1.5
+numpy>=1.23
+matplotlib>=3.6
+geojson>=3.0
+tifffile>=2023.1
+imagecodecs>=2023.1
+Pillow>=9.4
+h5py>=3.8
+tqdm>=4.64
